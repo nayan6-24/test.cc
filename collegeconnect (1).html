@@ -1,0 +1,480 @@
+<title>CollegeConnect</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: app shell. Left module rail on desktop, scrolling tab strip on phones. Main pane holds one module at a time. */
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --surface-2:#E9EDF5; --line:#D5DBE8;
+  --ink:#121B33; --ink-2:#4A5675; --accent:#2446C8; --accent-ink:#FFFFFF; --mark:#F2B531; --mark-ink:#3A2A00;
+  --good:#17803D; --warn:#A96300; --bad:#B42318;
+  --pdf:#C23A4B; --f-display:"Bricolage Grotesque",system-ui,sans-serif; --f-body:"Source Sans 3",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1424; --surface:#161E34; --surface-2:#1F2945; --line:#2B3658;
+  --ink:#E8ECF7; --ink-2:#A3AECB; --accent:#7C98FF; --accent-ink:#0B1226; --mark:#F2B531; --mark-ink:#3A2A00;
+  --good:#52C77D; --warn:#F0B44C; --bad:#FF8A7D; --pdf:#FF7A8A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1424; --surface:#161E34; --surface-2:#1F2945; --line:#2B3658;
+  --ink:#E8ECF7; --ink-2:#A3AECB; --accent:#7C98FF; --accent-ink:#0B1226; --mark:#F2B531; --mark-ink:#3A2A00;
+  --good:#52C77D; --warn:#F0B44C; --bad:#FF8A7D; --pdf:#FF7A8A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f-body);padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.6rem} h3{font-size:1.1rem}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.02em}
+.label{font:500 .72rem/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);background:var(--surface);padding:.5rem .9rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:.92rem}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:.3rem .65rem;font-size:.82rem}
+input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:.55rem .7rem}
+textarea{min-height:92px;resize:vertical}
+label.f{display:grid;gap:.3rem;font-weight:600;font-size:.88rem}
+
+/* shell */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px))) calc(-1*max(16px,env(safe-area-inset-right,0px)));padding:.7rem max(16px,env(safe-area-inset-right,0px)) .7rem max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line);display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.6rem;font:700 1.25rem var(--f-display)}
+.brand i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--surface);font-style:normal;font-size:.95rem}
+.brand b{color:var(--accent);font-weight:700}
+.top .who{margin-left:auto;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .6rem;border-radius:99px;background:var(--surface-2);font:500 .74rem var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.chip.mark{background:var(--mark);color:var(--mark-ink)}
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:1.6rem;max-width:1120px;margin:0 auto;padding-block:1.4rem 3rem}
+.rail{display:flex;flex-direction:column;gap:.2rem;position:sticky;top:calc(env(safe-area-inset-top,0px) + 4.4rem);align-self:start}
+.rail button{display:flex;justify-content:space-between;align-items:center;gap:.5rem;text-align:left;border:0;background:transparent;padding:.6rem .8rem;border-radius:8px;cursor:pointer;font-weight:600;color:var(--ink-2)}
+.rail button:hover{background:var(--surface-2)}
+.rail button[aria-current="page"]{background:var(--ink);color:var(--surface)}
+.rail .n{font:500 .72rem var(--f-mono);background:var(--mark);color:var(--mark-ink);border-radius:99px;padding:.05rem .45rem}
+.main{min-width:0;display:grid;gap:1.2rem;align-content:start}
+.head{display:flex;justify-content:space-between;align-items:end;gap:1rem;flex-wrap:wrap}
+.head p{color:var(--ink-2);margin-top:.25rem;max-width:60ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.1rem}
+.grid{display:grid;gap:.8rem}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.muted{color:var(--ink-2)}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) 170px 150px;gap:.6rem}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:.8rem}
+  .rail{position:static;flex-direction:row;overflow-x:auto;padding-bottom:.3rem}
+  .rail button{white-space:nowrap}
+  .tool{grid-template-columns:minmax(0,1fr)}
+}
+
+/* materials */
+.mat{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.9rem;align-items:center;padding:.8rem 1rem}
+.pdf{width:44px;height:54px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:end center;padding-bottom:5px;font:500 .66rem var(--f-mono);color:var(--pdf);position:relative}
+.pdf::before{content:"";position:absolute;right:-1px;top:-1px;border:8px solid transparent;border-top-color:var(--bg);border-right-color:var(--bg)}
+.mat h3{font-size:1rem;font-family:var(--f-body);font-weight:600;letter-spacing:0}
+.mat .meta{color:var(--ink-2);font-size:.86rem;display:flex;gap:.2rem .9rem;flex-wrap:wrap;margin-top:.15rem}
+@media (max-width:560px){.mat{grid-template-columns:44px minmax(0,1fr)}.mat .acts{grid-column:1/-1}}
+.sheet{border:1px solid var(--accent);background:var(--surface);border-radius:12px;padding:1.1rem;display:grid;gap:.8rem}
+.page{background:var(--surface-2);border:1px dashed var(--line);border-radius:8px;padding:1.2rem;display:grid;gap:.5rem}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}.bar>span{display:block;height:100%;background:var(--accent)}
+
+/* announcements */
+.ann{display:grid;gap:.45rem;padding:1rem 1.1rem}
+.ann.unread{border-left:4px solid var(--mark)}
+.ann h3{font-size:1.05rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mark);display:inline-block}
+
+/* messages */
+.chat{display:grid;grid-template-columns:240px minmax(0,1fr);gap:1rem;min-height:420px}
+@media (max-width:760px){.chat{grid-template-columns:minmax(0,1fr)}}
+.threads{display:grid;gap:.3rem;align-content:start}
+.threads button{display:grid;gap:.1rem;text-align:left;border:1px solid transparent;background:transparent;border-radius:8px;padding:.6rem .7rem;cursor:pointer}
+.threads button[aria-current="true"]{background:var(--surface-2);border-color:var(--line)}
+.msgs{display:flex;flex-direction:column;gap:.5rem;padding:.4rem 0;max-height:340px;overflow:auto}
+.bub{max-width:78%;padding:.5rem .75rem;border-radius:12px;background:var(--surface-2)}
+.bub.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
+.bub small{display:block;opacity:.7;font:500 .68rem var(--f-mono);margin-top:.15rem}
+
+/* events */
+.ev{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.8rem 1rem}
+.date{text-align:center;border-radius:10px;background:var(--ink);color:var(--surface);padding:.45rem 0}
+.date b{display:block;font:700 1.5rem/1 var(--f-display)}.date span{font:500 .68rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+@media (max-width:560px){.ev{grid-template-columns:64px minmax(0,1fr)}.ev .acts{grid-column:1/-1}}
+
+/* tables */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th{text-align:left;font:500 .72rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+th,td{padding:.55rem .6rem;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:.3rem;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:transparent;padding:.55rem .9rem;cursor:pointer;font-weight:600;color:var(--ink-2);border-bottom:3px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--mark)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem}
+.stat b{font:700 2rem/1 var(--f-display);display:block;margin-top:.4rem}
+
+.pwwrap{position:relative}.pwwrap input{padding-right:4.4rem}
+.pwbtn{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--accent);font-weight:600;font-size:.85rem;cursor:pointer;padding:.35rem .55rem;border-radius:6px}
+.pwbtn:hover{background:var(--surface-2)}
+/* login */
+.login{max-width:900px;margin:0 auto;padding-block:2.2rem 3rem;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2rem;align-items:start}
+@media (max-width:800px){.login{grid-template-columns:minmax(0,1fr)}}
+.login h1{font-size:clamp(2rem,6vw,3.2rem)}
+.login h1 mark{background:var(--mark);color:var(--mark-ink);padding:0 .2em;border-radius:4px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.roles button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:.6rem .4rem;cursor:pointer;font-weight:600}
+.roles button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.steps{display:grid;gap:.4rem;margin-top:1.2rem}
+.steps div{display:flex;gap:.6rem;align-items:center;color:var(--ink-2)}
+.err{color:var(--bad);font-weight:600;font-size:.9rem}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:.65rem 1rem;border-radius:10px;z-index:40;max-width:calc(100% - 32px);font-weight:600}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .2s ease-out}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+</style>
+
+<div id="app"></div>
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script>
+(function(){
+var $app=document.getElementById('app'),$toast=document.getElementById('toast');
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var uid=100;function nid(){return ++uid}
+var SUBJECTS=['Data Structures','Operating Systems','Database Systems','Engineering Mathematics III','Computer Networks'];
+var S={
+  user:{name:'Dr. Meera Nair',code:'CC-F-1001',email:'meera.nair@gmail.com',role:'Faculty',dept:'Computer Science',phone:'+91 98450 12345'},
+  view:'materials',loginRole:'Faculty',loginTab:'login',loginErr:'',verifying:false,
+  q:'',fSub:'',fSem:'',showFilter:false,openMat:null,
+  readAnn:{},annForm:false,evForm:false,profEdit:false,adminTab:'reports',dirFilter:'All',activeThread:null,
+  materials:[
+    {id:1,title:'Linked Lists and Stacks: Lecture Notes',sub:'Data Structures',sem:3,pages:42,size:'2.1 MB',by:'Dr. Meera Nair'},
+    {id:2,title:'Process Scheduling Question Bank',sub:'Operating Systems',sem:4,pages:18,size:'860 KB',by:'Prof. Sandeep Rao'},
+    {id:3,title:'ER Diagrams and Normalisation Notes',sub:'Database Systems',sem:4,pages:36,size:'1.8 MB',by:'Dr. Kavya Iyer'},
+    {id:4,title:'Fourier Series: Solved Problems',sub:'Engineering Mathematics III',sem:3,pages:54,size:'3.4 MB',by:'Prof. Anil Shetty'},
+    {id:5,title:'TCP Congestion Control Slides',sub:'Computer Networks',sem:5,pages:28,size:'1.2 MB',by:'Dr. Kavya Iyer'},
+    {id:6,title:'Binary Trees and Heaps Practice Set',sub:'Data Structures',sem:3,pages:22,size:'940 KB',by:'Dr. Meera Nair'},
+    {id:7,title:'Deadlocks: Previous Year Papers 2022-25',sub:'Operating Systems',sem:4,pages:30,size:'2.6 MB',by:'Prof. Sandeep Rao'}
+  ],
+  anns:[
+    {id:1,title:'Internal Assessment 1 timetable released',body:'IA-1 for semesters 3 and 5 begins on 3 November. The room allotment is pinned outside the department office.',by:'Dr. Meera Nair',aud:'All students',when:'Today, 9:10',own:true},
+    {id:2,title:'Library closes early on Friday',body:'The central library will close at 3 pm on 23 October for stock verification.',by:'Admin Office',aud:'Everyone',when:'Yesterday',own:false},
+    {id:3,title:'Lab record submission extended',body:'Database Systems lab records can be submitted until 27 October. No further extension will be given.',by:'Dr. Kavya Iyer',aud:'Semester 4',when:'18 Oct',own:false}
+  ],
+  events:[
+    {id:1,d:24,m:'Oct',title:'Tech Fest 2026: Inauguration',place:'Main Auditorium',time:'10:00 AM'},
+    {id:2,d:28,m:'Oct',title:'Placement Preparation Talk',place:'Seminar Hall B',time:'2:30 PM'},
+    {id:3,d:3,m:'Nov',title:'Internal Assessment 1 begins',place:'All departments',time:'9:30 AM'},
+    {id:4,d:14,m:'Nov',title:'Alumni Meet',place:'Open Air Theatre',time:'5:00 PM'}
+  ],
+  users:[
+    {id:1,code:'CC-F-1001',pw:'faculty123',name:'Dr. Meera Nair',email:'meera.nair@gmail.com',role:'Faculty',on:true},
+    {id:2,code:'CC-F-1002',pw:'demo1234',name:'Dr. Kavya Iyer',email:'kavya.iyer@gmail.com',role:'Faculty',on:true},
+    {id:3,code:'CC-F-1003',pw:'demo1234',name:'Prof. Sandeep Rao',email:'sandeep.rao@gmail.com',role:'Faculty',on:true},
+    {id:4,code:'CC-S-2001',pw:'student123',name:'Arjun Rao',email:'arjun.rao@gmail.com',role:'Student',on:true},
+    {id:5,code:'CC-S-2002',pw:'demo1234',name:'Diya Menon',email:'diya.menon@gmail.com',role:'Student',on:true},
+    {id:6,code:'CC-S-2003',pw:'demo1234',name:'Rohit Kulkarni',email:'rohit.k@gmail.com',role:'Student',on:false},
+    {id:7,code:'CC-A-0001',pw:'admin123',name:'Registrar Office',email:'registrar@gmail.com',role:'Admin',on:true}
+  ],
+  next:{F:1004,S:2004},created:null,newCred:null,
+  threads:{
+    Faculty:[{id:1,with:'Arjun Rao',msgs:[{me:false,t:'Ma\'am, can I get the Heaps practice set in PDF?',w:'9:02'},{me:true,t:'It is in Study Materials under Data Structures.',w:'9:15'}]},
+             {id:2,with:'Diya Menon',msgs:[{me:false,t:'Is the lab viva on Monday?',w:'Yesterday'}]}],
+    Student:[{id:1,with:'Dr. Meera Nair',msgs:[{me:true,t:'Ma\'am, can I get the Heaps practice set in PDF?',w:'9:02'},{me:false,t:'It is in Study Materials under Data Structures.',w:'9:15'}]},
+             {id:2,with:'Dr. Kavya Iyer',msgs:[]}]
+  }
+};
+var NAV={
+  Faculty:[['materials','Study Materials'],['announcements','Announcements'],['messages','Messages'],['directory','Directory'],['events','Events'],['profile','Profile']],
+  Student:[['materials','Study Materials'],['announcements','Announcements'],['messages','Messages'],['directory','Directory'],['events','Events'],['profile','Profile']],
+  Admin:[['admin','Admin Console'],['announcements','Announcements'],['events','Events'],['materials','Study Materials'],['profile','Profile']]
+};
+function toast(t){$toast.textContent=t;$toast.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(function(){$toast.hidden=true},2600)}
+function role(){return S.user&&S.user.role}
+function unread(){return S.anns.filter(function(a){return !S.readAnn[a.id]}).length}
+
+/* ---------- login ---------- */
+function renderLogin(){
+  var reg=S.loginTab==='register',c=S.created,form;
+  var err=S.loginErr?'<div class="err" role="alert">'+esc(S.loginErr)+'</div>':'';
+  if(S.loginTab==='forgot'){
+    form=S.resetFor?
+      '<form class="panel grid" data-form="reset"><span class="label">Reset password</span><h3>Choose a new password</h3><p class="muted">For ID <strong class="mono">'+esc(S.resetFor)+'</strong></p>'+
+      '<label class="f" for="np">New password<input id="np" name="pw" type="password" required minlength="6" autocomplete="new-password"></label>'+
+      '<label class="f" for="np2">Confirm new password<input id="np2" name="pw2" type="password" required minlength="6" autocomplete="new-password"></label>'+err+
+      '<button class="btn primary" type="submit">Save new password</button></form>':
+      '<form class="panel grid" data-form="forgot"><span class="label">Forgot password</span><h3>Confirm it is you</h3><p class="muted">Enter your CollegeConnect ID and the email you registered with.</p>'+
+      '<label class="f" for="fi">CollegeConnect ID<input id="fi" name="code" required autocapitalize="characters" placeholder="CC-S-2004" value="'+esc(S.loginCode||'')+'"></label>'+
+      '<label class="f" for="fe">Registered email<input id="fe" name="email" type="email" required autocomplete="email"></label>'+err+
+      '<button class="btn primary" type="submit">Continue</button><button type="button" class="btn ghost" data-act="ltab" data-id="login">Back to login</button>'+
+      '<p class="muted" style="font-size:.85rem">Demo: a live site would email a reset link to this address. Here you set the new password right after confirming your details.</p></form>';
+  }else if(c){
+    form='<div class="panel grid"><span class="label">Account created</span><h3>Welcome, '+esc(c.name.split(' ')[0])+'</h3><p class="muted">Your CollegeConnect ID is</p>'+
+    '<div class="mono" style="font-size:1.6rem;font-weight:500;letter-spacing:.06em;background:var(--mark);color:var(--mark-ink);padding:.7rem 1rem;border-radius:10px;user-select:all">'+esc(c.code)+'</div>'+
+    '<p class="muted">Save this ID. You log in with it and the password you just chose, not with your email.</p><button class="btn primary" data-act="toLogin" data-id="'+esc(c.code)+'">Continue to login</button></div>';
+  }else{
+    form='<form class="panel grid" data-form="'+(reg?'register':'login')+'"><div class="tabs" role="tablist">'+
+    '<button type="button" role="tab" aria-selected="'+!reg+'" data-act="ltab" data-id="login">Login</button>'+
+    '<button type="button" role="tab" aria-selected="'+reg+'" data-act="ltab" data-id="register">Register</button></div>'+
+    (reg?'<p class="muted">Register with your own email. We create your CollegeConnect ID, and you use it to log in. Faculty IDs are issued by the admin.</p>'+
+      '<label class="f" for="rn">Full name<input id="rn" name="name" required autocomplete="name"></label>'+
+      '<label class="f" for="em">Email address<input id="em" name="email" type="email" required autocomplete="email"></label>'+
+      '<label class="f" for="pw">Create password<input id="pw" name="pw" type="password" required minlength="6" autocomplete="new-password"></label>':
+      '<label class="f" for="ci">CollegeConnect ID<input id="ci" name="code" required autocapitalize="characters" autocomplete="username" placeholder="CC-S-2004" value="'+esc(S.loginCode||'')+'"></label>'+
+      '<label class="f" for="pw">Password<input id="pw" name="pw" type="password" required autocomplete="current-password" value="'+esc(S.loginPw||'')+'"></label>')+
+    (S.loginErr?'<div class="err" role="alert">'+esc(S.loginErr)+'</div>':'')+
+    '<button class="btn primary" type="submit" '+(S.verifying?'disabled':'')+'>'+(S.verifying?'Verifying credentials…':(reg?'Create my ID':'Login'))+'</button>'+
+    (reg?'':'<button type="button" class="btn ghost sm" data-act="ltab" data-id="forgot" style="justify-self:start">Forgot password?</button>')+
+    (reg?'':'<div class="grid" style="border-top:1px solid var(--line);padding-top:.8rem"><span class="label">Sample accounts (tap to fill)</span><div class="row">'+
+      [['CC-F-1001','Faculty'],['CC-S-2001','Student'],['CC-A-0001','Admin']].map(function(a){return '<button type="button" class="btn sm" data-act="fillDemo" data-id="'+a[0]+'">'+a[1]+' · '+a[0]+'</button>'}).join('')+'</div></div>')+
+    '</form>';
+  }
+  return '<div class="login"><div><div class="brand"><i>C</i>College<b>Connect</b></div>'+
+  '<h1 style="margin-top:1.4rem">Notes, notices and your <mark>teachers</mark> in one place.</h1>'+
+  '<p class="muted" style="margin-top:1rem;max-width:46ch">Find semester study material, read department announcements, message faculty and keep track of campus events.</p>'+
+  '<div class="steps"><div><span class="chip">Faculty</span>Share material, post announcements, reply to students</div><div><span class="chip">Student</span>Find PDFs, read notices, ask questions</div><div><span class="chip">Admin</span>Manage users, subjects, events and reports</div></div></div>'+form+'</div>';
+}
+function renderLoginOld(){
+  var reg=S.loginTab==='register';
+  var demo={Faculty:'meera.nair@college.edu',Student:'arjun.rao@college.edu',Admin:'registrar@college.edu'}[S.loginRole];
+  return '<div class="login"><div><div class="brand"><i>C</i>College<b>Connect</b></div>'+
+  '<h1 style="margin-top:1.4rem">Notes, notices and your <mark>teachers</mark> in one place.</h1>'+
+  '<p class="muted" style="margin-top:1rem;max-width:46ch">Find semester study material, read department announcements, message faculty and keep track of campus events.</p>'+
+  '<div class="steps"><div><span class="chip">Faculty</span>Share material, post announcements, reply to students</div><div><span class="chip">Student</span>Find PDFs, read notices, ask questions</div><div><span class="chip">Admin</span>Manage users, subjects, events and reports</div></div></div>'+
+  '<form class="panel grid" data-form="'+(reg?'register':'login')+'"><div class="tabs" role="tablist">'+
+  '<button type="button" role="tab" aria-selected="'+!reg+'" data-act="ltab" data-id="login">Login</button>'+
+  '<button type="button" role="tab" aria-selected="'+reg+'" data-act="ltab" data-id="register">Register</button></div>'+
+  (reg?'<p class="muted">New accounts are created for students. Faculty and admin accounts are added by the admin office.</p>':
+  '<div class="roles" role="group" aria-label="Sign in as">'+['Faculty','Student','Admin'].map(function(r){return '<button type="button" data-act="lrole" data-id="'+r+'" aria-pressed="'+(S.loginRole===r)+'">'+r+'</button>'}).join('')+'</div>')+
+  (reg?'<label class="f" for="rn">Full name<input id="rn" name="name" required autocomplete="name"></label>':'')+
+  '<label class="f" for="em">Email address<input id="em" name="email" type="email" required autocomplete="username" value="'+(reg?'':demo)+'"></label>'+
+  '<label class="f" for="pw">Password<input id="pw" name="pw" type="password" required minlength="4" autocomplete="current-password" value="'+(reg?'':'demo1234')+'"></label>'+
+  (S.loginErr?'<div class="err" role="alert">'+esc(S.loginErr)+'</div>':'')+
+  '<button class="btn primary" type="submit" '+(S.verifying?'disabled':'')+'>'+(S.verifying?'Verifying credentials…':(reg?'Create account':'Login'))+'</button>'+
+  (reg?'':'<p class="muted" style="font-size:.85rem">Demo mode: the sample password is already filled in. Any valid email address and a password of 4+ characters will work.</p>')+
+  '</form></div>';
+}
+
+/* ---------- shell ---------- */
+function renderShell(){
+  var r=role(),nav=NAV[r];
+  var rail=nav.map(function(n){var c=n[0]==='announcements'&&unread()?'<span class="n">'+unread()+'</span>':'';return '<button data-act="nav" data-id="'+n[0]+'" '+(S.view===n[0]?'aria-current="page"':'')+'><span>'+n[1]+'</span>'+c+'</button>'}).join('');
+  return '<header class="top"><div class="brand"><i>C</i>College<b>Connect</b></div><div class="who"><span class="chip mark">'+esc(r)+'</span><span style="font-weight:600">'+esc(S.user.name)+'</span><button class="btn sm" data-act="logout">Logout</button></div></header>'+
+  '<div class="shell"><nav class="rail" aria-label="Modules">'+rail+'</nav><main class="main">'+renderView()+'</main></div>';
+}
+function renderView(){
+  switch(S.view){
+    case 'materials':return vMaterials();
+    case 'announcements':return vAnn();
+    case 'messages':return vMsgs();
+    case 'directory':return vDir();
+    case 'events':return vEvents();
+    case 'profile':return vProfile();
+    case 'admin':return vAdmin();
+  }return '';
+}
+
+/* ---------- study materials ---------- */
+function filtered(){
+  var q=S.q.trim().toLowerCase();
+  return S.materials.filter(function(m){
+    return (!q||(m.title+' '+m.sub+' '+m.by).toLowerCase().indexOf(q)>-1)&&(!S.fSub||m.sub===S.fSub)&&(!S.fSem||String(m.sem)===S.fSem)});
+}
+function vMaterials(){
+  var list=filtered(),r=role();
+  var h='<div class="head"><div><h2>Study Materials</h2><p>PDF notes, question banks and slides shared by faculty, organised by subject and semester.</p></div>'+
+   (r==='Admin'?'<button class="btn" data-act="nav" data-id="admin" data-tab="materials">Manage materials</button>':'')+'</div>'+
+   '<div class="tool"><input id="q" type="search" placeholder="Search by title, subject or faculty" aria-label="Search materials" value="'+esc(S.q)+'">'+
+   '<span></span><button class="btn" data-act="toggleFilter" aria-expanded="'+S.showFilter+'">'+(S.showFilter?'Hide filters':'Filter by subject / semester')+'</button></div>';
+  if(S.showFilter){
+    h+='<div class="panel row"><label class="f sp" for="fs">Subject<select id="fs" data-act="fsub"><option value="">All subjects</option>'+SUBJECTS.map(function(s){return '<option'+(S.fSub===s?' selected':'')+'>'+esc(s)+'</option>'}).join('')+'</select></label>'+
+    '<label class="f sp" for="fm">Semester<select id="fm" data-act="fsem"><option value="">All semesters</option>'+[3,4,5].map(function(n){return '<option value="'+n+'"'+(S.fSem===String(n)?' selected':'')+'>Semester '+n+'</option>'}).join('')+'</select></label></div>';
+  }
+  if(S.openMat){var m=S.materials.filter(function(x){return x.id===S.openMat})[0];if(m){
+    h+='<div class="sheet"><div class="row"><h3>'+esc(m.title)+'</h3><span class="sp"></span><button class="btn sm" data-act="closeMat">Close</button></div>'+
+    '<div class="mono muted">'+esc(m.sub)+' · Semester '+m.sem+' · '+m.pages+' pages · '+m.size+'</div>'+
+    '<div class="page"><span class="label">Page 1 of '+m.pages+' (sample preview)</span><h3>'+esc(m.title)+'</h3><p class="muted">This sample entry has no PDF attached. In your deployment, the reader opens the uploaded file here.</p></div>'+
+    '<div class="row"><button class="btn primary" data-act="dl" data-id="'+m.id+'">Download PDF</button></div></div>';}}
+  h+='<div class="grid">'+(list.length?list.map(function(m){
+    return '<div class="panel mat"><div class="pdf">PDF</div><div><h3>'+esc(m.title)+'</h3><div class="meta"><span>'+esc(m.sub)+'</span><span>Sem '+m.sem+'</span><span>'+m.pages+' pp · '+m.size+'</span><span>by '+esc(m.by)+'</span></div></div>'+
+    '<div class="acts row"><button class="btn sm" data-act="openMat" data-id="'+m.id+'">Open</button><button class="btn sm ghost" data-act="dl" data-id="'+m.id+'">Download</button></div></div>'}).join(''):'<div class="panel muted">No materials match. Clear the search or filters to see all '+S.materials.length+'.</div>')+'</div>';
+  return h;
+}
+
+/* ---------- announcements ---------- */
+function canPost(){return role()==='Faculty'||role()==='Admin'}
+function vAnn(){
+  var h='<div class="head"><div><h2>Announcements</h2><p>Notices from departments and the admin office.</p></div>'+
+   (canPost()?'<button class="btn primary" data-act="annForm">'+(S.annForm?'Cancel':'Post announcement')+'</button>':'')+'</div>';
+  if(S.annForm&&canPost()){
+    h+='<form class="panel grid" data-form="postAnn"><label class="f" for="at">Title<input id="at" name="title" required></label><label class="f" for="ab">Message<textarea id="ab" name="body" required></textarea></label>'+
+    '<label class="f" for="aa">Audience<select id="aa" name="aud"><option>All students</option><option>Semester 3</option><option>Semester 4</option><option>Semester 5</option><option>Everyone</option></select></label>'+
+    '<div class="row"><button class="btn primary" type="submit">Post</button></div></form>';
+  }
+  h+='<div class="grid">'+S.anns.map(function(a){
+    var un=!S.readAnn[a.id],mng=role()==='Admin'||(role()==='Faculty'&&a.own);
+    return '<article class="panel ann'+(un?' unread':'')+'"><div class="row">'+(un?'<span class="dot" title="Unread"></span>':'')+'<h3>'+esc(a.title)+'</h3></div><p>'+esc(a.body)+'</p>'+
+    '<div class="row"><span class="mono muted">'+esc(a.by)+' · '+esc(a.aud)+' · '+esc(a.when)+'</span><span class="sp"></span>'+
+    (un?'<button class="btn sm" data-act="read" data-id="'+a.id+'">Mark as read</button>':'<span class="chip">Read</span>')+
+    (mng?'<button class="btn sm danger" data-act="delAnn" data-id="'+a.id+'">Delete</button>':'')+'</div></article>'}).join('')+
+    (S.anns.length?'':'<div class="panel muted">No announcements yet.</div>')+'</div>';
+  return h;
+}
+
+/* ---------- messages / directory ---------- */
+function threads(){return S.threads[role()]}
+function vMsgs(){
+  var T=threads(),t=T.filter(function(x){return x.id===S.activeThread})[0]||T[0];
+  var h='<div class="head"><div><h2>Messages</h2><p>'+(role()==='Student'?'Ask your faculty about assignments, labs and material.':'Reply to student questions.')+'</p></div></div>'+
+  '<div class="panel chat"><div class="threads" aria-label="Conversations">'+T.map(function(x){var last=x.msgs[x.msgs.length-1];
+    return '<button data-act="thread" data-id="'+x.id+'" aria-current="'+(t&&t.id===x.id)+'"><strong>'+esc(x.with)+'</strong><span class="muted" style="font-size:.84rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(last?esc(last.t):'No messages yet')+'</span></button>'}).join('')+
+    '<button class="btn sm" data-act="nav" data-id="directory" style="margin-top:.5rem">'+(role()==='Student'?'Chat with Faculty':'New message')+'</button></div>';
+  if(t){h+='<div style="display:grid;grid-template-rows:auto 1fr auto;gap:.5rem;min-width:0"><h3>'+esc(t.with)+'</h3><div class="msgs" id="msgs">'+
+    (t.msgs.length?t.msgs.map(function(m){return '<div class="bub'+(m.me?' me':'')+'">'+esc(m.t)+'<small>'+esc(m.w)+'</small></div>'}).join(''):'<p class="muted">Say hello to start this conversation.</p>')+
+    '</div><form class="row" data-form="send" style="flex-wrap:nowrap"><label class="sp" for="mi" style="min-width:0"><span class="label" style="position:absolute;left:-9999px">Message</span><input id="mi" name="text" placeholder="Write a message" autocomplete="off" required></label><button class="btn primary" type="submit">Send</button></form></div>';}
+  return h+'</div>';
+}
+function vDir(){
+  var f=S.dirFilter,L=S.users.filter(function(u){return u.role!=='Admin'&&u.on&&u.email!==S.user.email&&(f==='All'||u.role===f)});
+  return '<div class="head"><div><h2>Faculty and Student List</h2><p>Find people in your college and start a conversation.</p></div></div>'+
+  '<div class="row">'+['All','Faculty','Student'].map(function(x){return '<button class="btn sm'+(f===x?' primary':'')+'" data-act="dirf" data-id="'+x+'">'+x+'</button>'}).join('')+'</div>'+
+  '<div class="panel tw"><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th></th></tr></thead><tbody>'+L.map(function(u){
+    return '<tr><td><strong>'+esc(u.name)+'</strong></td><td><span class="chip">'+u.role+'</span></td><td class="mono">'+esc(u.email)+'</td><td><button class="btn sm" data-act="chatWith" data-id="'+esc(u.name)+'">'+(role()==='Student'&&u.role==='Faculty'?'Chat with Faculty':'Message')+'</button></td></tr>'}).join('')+'</tbody></table></div>';
+}
+
+/* ---------- events ---------- */
+function vEvents(){
+  var adm=role()==='Admin';
+  var h='<div class="head"><div><h2>Events</h2><p>Upcoming dates on campus.</p></div>'+(adm?'<button class="btn primary" data-act="evForm">'+(S.evForm?'Cancel':'Add event')+'</button>':'')+'</div>';
+  if(S.evForm&&adm)h+='<form class="panel grid" data-form="addEv"><label class="f" for="et">Event name<input id="et" name="title" required></label><div class="row"><label class="f sp" for="ed">Date<input id="ed" name="date" type="date" required></label><label class="f sp" for="eh">Time<input id="eh" name="time" type="time" value="10:00" required></label></div><label class="f" for="ep">Venue<input id="ep" name="place" required></label><div class="row"><button class="btn primary" type="submit">Add event</button></div></form>';
+  h+='<div class="grid">'+S.events.map(function(e){return '<div class="panel ev"><div class="date"><b>'+e.d+'</b><span>'+e.m+'</span></div><div><h3>'+esc(e.title)+'</h3><div class="muted">'+esc(e.place)+' · '+esc(e.time)+'</div></div>'+(adm?'<div class="acts row"><button class="btn sm danger" data-act="delEv" data-id="'+e.id+'">Remove</button></div>':'')+'</div>'}).join('')+(S.events.length?'':'<div class="panel muted">No upcoming events.</div>')+'</div>';
+  return h;
+}
+
+/* ---------- profile ---------- */
+function vProfile(){
+  var u=S.user;
+  if(S.profEdit)return '<div class="head"><div><h2>Edit Profile</h2></div></div><form class="panel grid" data-form="profile"><label class="f" for="pn">Name<input id="pn" name="name" required value="'+esc(u.name)+'"></label><label class="f" for="pd">Department<input id="pd" name="dept" value="'+esc(u.dept||'')+'"></label><label class="f" for="pp">Phone<input id="pp" name="phone" value="'+esc(u.phone||'')+'"></label><div class="row"><button class="btn primary" type="submit">Update profile</button><button class="btn" type="button" data-act="profEdit">Cancel</button></div></form>';
+  return '<div class="head"><div><h2>Profile</h2></div><button class="btn" data-act="profEdit">Edit profile</button></div><div class="panel grid"><div><span class="label">Name</span><p style="font-size:1.2rem;font-weight:600">'+esc(u.name)+'</p></div><div class="row" style="gap:2rem"><div><span class="label">Role</span><p>'+esc(u.role)+'</p></div><div><span class="label">Department</span><p>'+esc(u.dept||'Not set')+'</p></div><div><span class="label">Phone</span><p>'+esc(u.phone||'Not set')+'</p></div></div><div class="row" style="gap:2rem"><div><span class="label">CollegeConnect ID</span><p class="mono">'+esc(u.code||'')+'</p></div><div><span class="label">Email</span><p class="mono">'+esc(u.email)+'</p></div></div></div>';
+}
+
+/* ---------- admin ---------- */
+function vAdmin(){
+  var tabs=[['reports','Reports'],['users','Users'],['subjects','Subjects'],['materials','Materials']];
+  var h='<div class="head"><div><h2>Admin Console</h2><p>Manage people, subjects and shared material. Announcements and events have their own pages.</p></div></div><div class="tabs" role="tablist">'+tabs.map(function(t){return '<button role="tab" aria-selected="'+(S.adminTab===t[0])+'" data-act="atab" data-id="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>';
+  if(S.adminTab==='reports'){
+    var act=S.users.filter(function(u){return u.on}).length,rd=Object.keys(S.readAnn).length,max=Math.max.apply(null,SUBJECTS.map(function(s){return S.materials.filter(function(m){return m.sub===s}).length}).concat([1]));
+    h+='<div class="stats"><div class="panel stat"><span class="label">Active users</span><b>'+act+'</b></div><div class="panel stat"><span class="label">Materials</span><b>'+S.materials.length+'</b></div><div class="panel stat"><span class="label">Announcements</span><b>'+S.anns.length+'</b></div><div class="panel stat"><span class="label">Upcoming events</span><b>'+S.events.length+'</b></div></div>'+
+    '<div class="panel grid"><h3>Materials per subject</h3>'+SUBJECTS.map(function(s){var n=S.materials.filter(function(m){return m.sub===s}).length;return '<div><div class="row"><span>'+esc(s)+'</span><span class="sp"></span><span class="mono">'+n+'</span></div><div class="bar"><span style="width:'+(n/max*100)+'%"></span></div></div>'}).join('')+'</div>'+
+    '<p class="muted mono">Figures update as you add or remove records on this page. Sample data for demonstration.</p>';
+  }
+  if(S.adminTab==='users'){
+    h+='<form class="panel row" data-form="addUser"><label class="f sp" for="un" style="min-width:150px">Name<input id="un" name="name" required></label><label class="f sp" for="ue" style="min-width:170px">Email<input id="ue" name="email" type="email" required></label><label class="f" for="ur">Role<select id="ur" name="role"><option>Faculty</option><option>Student</option></select></label><button class="btn primary" type="submit" style="align-self:end">Create ID</button></form>'+
+    (S.newCred?'<div class="panel grid" style="border-color:var(--mark)"><span class="label">New account created</span><p>Give <strong>'+esc(S.newCred.name)+'</strong> these login details. The password is shown only now.</p><div class="mono" style="user-select:all">ID: '+esc(S.newCred.code)+' &nbsp; Password: '+esc(S.newCred.pw)+'</div><div class="row"><button class="btn sm" data-act="dismissCred">Done</button></div></div>':'')+
+    '<div class="panel tw"><table><thead><tr><th>Name</th><th>ID</th><th>Role</th><th>Email</th><th>Status</th><th></th></tr></thead><tbody>'+S.users.map(function(u){return '<tr><td><strong>'+esc(u.name)+'</strong></td><td class="mono">'+esc(u.code)+'</td><td>'+u.role+'</td><td class="mono">'+esc(u.email)+'</td><td>'+(u.on?'<span style="color:var(--good);font-weight:600">Active</span>':'<span style="color:var(--warn);font-weight:600">Suspended</span>')+'</td><td class="row">'+(u.role==='Admin'?'<span class="muted mono">Owner</span>':'<button class="btn sm" data-act="toggleUser" data-id="'+u.id+'">'+(u.on?'Suspend':'Activate')+'</button><button class="btn sm danger" data-act="delUser" data-id="'+u.id+'">Remove</button>')+'</td></tr>'}).join('')+'</tbody></table></div>';
+  }
+  if(S.adminTab==='subjects'){
+    h+='<form class="panel row" data-form="addSub" style="flex-wrap:nowrap"><label class="sp" for="sn"><span class="label" style="position:absolute;left:-9999px">Subject name</span><input id="sn" name="name" placeholder="New subject name" required></label><button class="btn primary" type="submit">Add subject</button></form><div class="grid">'+SUBJECTS.map(function(s,i){return '<div class="panel row"><strong>'+esc(s)+'</strong><span class="muted mono">'+S.materials.filter(function(m){return m.sub===s}).length+' materials</span><span class="sp"></span><button class="btn sm danger" data-act="delSub" data-id="'+i+'">Remove</button></div>'}).join('')+'</div>';
+  }
+  if(S.adminTab==='materials'){
+    h+='<form class="panel grid" data-form="addMat"><label class="f" for="mt">Title<input id="mt" name="title" required></label><div class="row"><label class="f sp" for="ms" style="min-width:180px">Subject<select id="ms" name="sub">'+SUBJECTS.map(function(s){return '<option>'+esc(s)+'</option>'}).join('')+'</select></label><label class="f" for="mm">Semester<select id="mm" name="sem"><option>3</option><option>4</option><option>5</option></select></label></div><div class="row"><button class="btn primary" type="submit">Add material</button></div></form><div class="grid">'+S.materials.map(function(m){return '<div class="panel row"><div style="min-width:0"><strong>'+esc(m.title)+'</strong><div class="muted mono">'+esc(m.sub)+' · Sem '+m.sem+'</div></div><span class="sp"></span><button class="btn sm danger" data-act="delMat" data-id="'+m.id+'">Remove</button></div>'}).join('')+'</div>';
+  }
+  return h;
+}
+
+/* ---------- render + events ---------- */
+function render(keepFocus){
+  var id=keepFocus&&document.activeElement&&document.activeElement.id,pos=id&&document.activeElement.selectionStart;
+  $app.innerHTML=S.user?renderShell():renderLogin();
+  Array.prototype.forEach.call($app.querySelectorAll('input[type=password]'),function(i){
+    var w=document.createElement('div');w.className='pwwrap';i.parentNode.insertBefore(w,i);w.appendChild(i);
+    var b=document.createElement('button');b.type='button';b.className='pwbtn';b.textContent='Show';b.setAttribute('aria-label','Show password');b.setAttribute('aria-pressed','false');
+    b.onclick=function(){var s=i.type==='password';i.type=s?'text':'password';b.textContent=s?'Hide':'Show';b.setAttribute('aria-label',s?'Hide password':'Show password');b.setAttribute('aria-pressed',String(s))};
+    w.appendChild(b)});
+  if(id){var el=document.getElementById(id);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(e){}}}
+  var mm=document.getElementById('msgs');if(mm)mm.scrollTop=mm.scrollHeight;
+}
+function go(v){S.view=v;S.openMat=null;S.annForm=false;S.evForm=false;S.profEdit=false;render();window.scrollTo(0,0)}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;var a=b.dataset.act,id=b.dataset.id;
+  if(a==='ltab'){S.loginTab=id;S.loginErr='';S.resetFor=null;render()}
+  else if(a==='fillDemo'){var ac=S.users.filter(function(u){return u.code===id})[0];S.loginCode=id;S.loginPw=ac?ac.pw:'';S.loginErr='';render()}
+  else if(a==='toLogin'){S.created=null;S.loginTab='login';S.loginCode=id;S.loginPw='';S.loginErr='';render()}
+  else if(a==='lrole'){S.loginRole=id;S.loginErr='';render()}
+  else if(a==='nav'){if(b.dataset.tab)S.adminTab=b.dataset.tab;go(id)}
+  else if(a==='logout'){S.user=null;S.loginErr='';S.created=null;S.loginCode='';S.loginPw='';S.loginTab='login';render();toast('You have been logged out')}
+  else if(a==='toggleFilter'){S.showFilter=!S.showFilter;render()}
+  else if(a==='openMat'){S.openMat=+id;render()}
+  else if(a==='closeMat'){S.openMat=null;render()}
+  else if(a==='dl')toast('Demo only: this sample material has no file attached')
+  else if(a==='annForm'){S.annForm=!S.annForm;render()}
+  else if(a==='read'){S.readAnn[id]=true;render()}
+  else if(a==='delAnn'){S.anns=S.anns.filter(function(x){return x.id!==+id});render();toast('Announcement deleted')}
+  else if(a==='thread'){S.activeThread=+id;render()}
+  else if(a==='dirf'){S.dirFilter=id;render()}
+  else if(a==='chatWith'){var T=threads(),t=T.filter(function(x){return x.with===id})[0];if(!t){t={id:nid(),with:id,msgs:[]};T.push(t)}S.activeThread=t.id;go('messages')}
+  else if(a==='evForm'){S.evForm=!S.evForm;render()}
+  else if(a==='delEv'){S.events=S.events.filter(function(x){return x.id!==+id});render();toast('Event removed')}
+  else if(a==='profEdit'){S.profEdit=!S.profEdit;render()}
+  else if(a==='atab'){S.adminTab=id;S.newCred=null;render()}
+  else if(a==='dismissCred'){S.newCred=null;render()}
+  else if(a==='toggleUser'){S.users.forEach(function(u){if(u.id===+id)u.on=!u.on});render()}
+  else if(a==='delUser'){S.users=S.users.filter(function(u){return u.id!==+id});render();toast('User removed')}
+  else if(a==='delSub'){var removed=SUBJECTS.splice(+id,1)[0];S.materials=S.materials.filter(function(m){return m.sub!==removed});render();toast('Subject and its materials removed')}
+  else if(a==='delMat'){S.materials=S.materials.filter(function(m){return m.id!==+id});render();toast('Material removed')}
+});
+document.addEventListener('input',function(e){if(e.target.id==='q'){S.q=e.target.value;render(true)}});
+document.addEventListener('change',function(e){var a=e.target.dataset&&e.target.dataset.act;if(a==='fsub'){S.fSub=e.target.value;render()}if(a==='fsem'){S.fSem=e.target.value;render()}});
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.addEventListener('submit',function(e){
+  var f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();var k=f.dataset.form,d=new FormData(f),g=function(n){return String(d.get(n)||'').trim()};
+  if(k==='forgot'){
+    var c3=g('code').toUpperCase(),e3=g('email').toLowerCase();S.loginCode=c3;
+    var a3=S.users.filter(function(u){return u.code===c3&&u.email.toLowerCase()===e3})[0];
+    if(!a3){S.loginErr='No account matches that ID and email.';render();return}
+    S.loginErr='';S.resetFor=c3;render();return}
+  if(k==='reset'){
+    var p1=String(d.get('pw')||''),p2=String(d.get('pw2')||'');
+    if(p1!==p2){S.loginErr='The two passwords do not match.';render();return}
+    S.users.forEach(function(u){if(u.code===S.resetFor)u.pw=p1});
+    var rc=S.resetFor;S.resetFor=null;S.loginErr='';S.loginTab='login';S.loginCode=rc;S.loginPw='';render();toast('Password changed. Log in with your new password');return}
+  if(k==='login'){
+    var code=g('code').toUpperCase(),pw0=String(d.get('pw')||'');S.loginCode=code;
+    var acc=S.users.filter(function(u){return u.code===code})[0];
+    S.loginErr='';S.verifying=true;render();
+    setTimeout(function(){S.verifying=false;
+      if(!acc||acc.pw!==pw0){S.loginErr='ID or password is incorrect.';render();return}
+      if(!acc.on){S.loginErr='This account is suspended. Contact the admin office.';render();return}
+      S.user={name:acc.name,code:acc.code,email:acc.email,role:acc.role,dept:acc.role==='Faculty'?'Computer Science':'',phone:''};
+      S.loginCode='';S.loginPw='';S.view=NAV[acc.role][0][0];S.activeThread=null;render()},600);
+    return}
+  if(k==='register'){
+    var em0=g('email'),pw1=String(d.get('pw')||''),nm0=g('name');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em0)){S.loginErr='Enter a valid email address.';render();return}
+    if(S.users.some(function(u){return u.email.toLowerCase()===em0.toLowerCase()})){S.loginErr='An account with this email already exists. Log in with your ID.';render();return}
+    var code2='CC-S-'+(S.next.S++);
+    S.users.push({id:nid(),code:code2,pw:pw1,name:nm0,email:em0,role:'Student',on:true});
+    S.loginErr='';S.created={code:code2,name:nm0};render();return}
+  if(false){
+    var em=g('email'),pw=g('pw');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){S.loginErr='Enter a valid email address.';render();return}
+    if(pw.length<4){S.loginErr='Password must be at least 4 characters.';render();return}
+    S.loginErr='';S.verifying=true;render();
+    setTimeout(function(){S.verifying=false;
+      if(k==='register'){var nm=g('name');S.users.push({id:nid(),name:nm,email:em,role:'Student',on:true});S.user={name:nm,email:em,role:'Student',dept:'',phone:''};toast('Account created. Welcome, '+nm.split(' ')[0])}
+      else{var r=S.loginRole,known=S.users.filter(function(u){return u.email.toLowerCase()===em.toLowerCase()})[0];
+        S.user=known&&known.role===r?{name:known.name,email:em,role:r,dept:r==='Faculty'?'Computer Science':'',phone:''}:{name:r==='Admin'?'Registrar Office':em.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()}),email:em,role:r,dept:'',phone:''}}
+      S.view=NAV[S.user.role][0][0];S.activeThread=null;render()},700);
+  }
+  else if(k==='postAnn'){S.anns.unshift({id:nid(),title:g('title'),body:g('body'),by:S.user.name,aud:g('aud'),when:'Just now',own:true});S.annForm=false;render();toast('Announcement posted')}
+  else if(k==='send'){var T=threads(),t=T.filter(function(x){return x.id===S.activeThread})[0]||T[0],txt=g('text');if(!t||!txt)return;t.msgs.push({me:true,t:txt,w:'Just now'});render();
+    var tid=t.id,rl=role();setTimeout(function(){var th=S.threads[rl].filter(function(x){return x.id===tid})[0];if(th){th.msgs.push({me:false,t:'Thanks, I will check and get back to you. (sample auto-reply)',w:'Just now'});if(S.view==='messages')render()}},1300)}
+  else if(k==='addEv'){var dt=new Date(g('date')+'T00:00');S.events.push({id:nid(),d:dt.getDate(),m:MON[dt.getMonth()],_s:dt.getTime(),title:g('title'),place:g('place'),time:g('time')});S.events.sort(function(a,b){return (a._s||0)-(b._s||0)});S.evForm=false;render();toast('Event added')}
+  else if(k==='profile'){S.user.name=g('name');S.user.dept=g('dept');S.user.phone=g('phone');S.profEdit=false;render();toast('Profile updated')}
+  else if(k==='addUser'){var rl2=g('role'),key=rl2==='Faculty'?'F':'S',cd='CC-'+key+'-'+(S.next[key]++),tp=Math.random().toString(36).slice(2,6)+Math.floor(1000+Math.random()*9000);
+    S.users.push({id:nid(),code:cd,pw:tp,name:g('name'),email:g('email'),role:rl2,on:true});S.newCred={name:g('name'),code:cd,pw:tp};render()}
+  else if(k==='addSub'){var n=g('name');if(n&&SUBJECTS.indexOf(n)<0)SUBJECTS.push(n);render();toast('Subject added')}
+  else if(k==='addMat'){S.materials.unshift({id:nid(),title:g('title'),sub:g('sub'),sem:+g('sem'),pages:0,size:'No file',by:'Admin Office'});render();toast('Material added')}
+});
+render();
+})();
+</script>
